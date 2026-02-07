@@ -16,12 +16,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/jrguimaraes/secure-auth-api/issues"
   },
   "homepage": "https://github.com/jrguimaraes/secure-auth-api#readme",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",
@@ -30,6 +31,7 @@
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "pg": "^8.18.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
