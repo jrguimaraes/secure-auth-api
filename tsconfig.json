@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+
     "module": "NodeNext",
     "target": "ES2022",
     "moduleResolution": "NodeNext",
     "types": ["node"],
+    
     "strict": true,
     "skipLibCheck": true
   }
