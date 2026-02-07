@@ -1,0 +1,14 @@
+# Força LF em tudo que é texto
+* text=auto eol=lf
+
+# Windows scripts (se tiver)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binários (não mexer)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
