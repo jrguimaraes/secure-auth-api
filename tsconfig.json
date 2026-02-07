@@ -7,8 +7,9 @@
     "target": "ES2022",
     "moduleResolution": "NodeNext",
     "types": ["node"],
-    
+
     "strict": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["prisma.config.ts"]
 }
