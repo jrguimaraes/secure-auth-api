@@ -2,6 +2,7 @@ import argon2 from "argon2";
 
 import { prisma } from "../../../../shared/db/prisma.js";
 import { AppError } from "../../../../shared/errors/app-error.js";
+import { signAccessToken, signRefreshToken } from "../../../../shared/auth/jwt.js";
 
 type LoginUserRequest = {
     email: string;
@@ -15,6 +16,8 @@ type LoginUserResponse = {
         createdAt: Date;
         updatedAt: Date;
     };
+    accessToken: string;
+    refreshToken: string;
 };
 
 export class LoginUserUseCase {
@@ -38,6 +41,14 @@ export class LoginUserUseCase {
             throw new AppError("Credenciais inválidas", 401, "INVALID_CREDENTIALS");
         }
 
+        const tokenPayload = {
+            sub: user.id,
+            email: user.email,
+        };
+
+        const accessToken = signAccessToken(tokenPayload);
+        const refreshToken = signRefreshToken(tokenPayload);
+
         return {
             user: {
                 id: user.id,
@@ -45,6 +56,8 @@ export class LoginUserUseCase {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             },
+            accessToken,
+            refreshToken,
         };
     }
 }
