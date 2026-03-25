@@ -7,6 +7,8 @@ import { signAccessToken, signRefreshToken } from "../../../../shared/auth/jwt.j
 type LoginUserRequest = {
     email: string;
     password: string;
+    userAgent: string;
+    ip: string;
 };
 
 type LoginUserResponse = {
@@ -24,6 +26,8 @@ export class LoginUserUseCase {
     async execute({
         email,
         password,
+        userAgent,
+        ip
     }: LoginUserRequest): Promise<LoginUserResponse> {
         const user = await prisma.user.findUnique({
             where: {
@@ -41,13 +45,33 @@ export class LoginUserUseCase {
             throw new AppError("Credenciais inválidas", 401, "INVALID_CREDENTIALS");
         }
 
+        const session = await prisma.session.create({
+            data: {
+                userId: user.id,
+                userAgent,
+                ip
+            }
+        });
+
         const tokenPayload = {
             sub: user.id,
             email: user.email,
+            sessionId: session.id
         };
 
         const accessToken = signAccessToken(tokenPayload);
         const refreshToken = signRefreshToken(tokenPayload);
+
+        const refreshTokenHash = await argon2.hash(refreshToken);
+
+        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+        await prisma.refreshToken.create({
+            data: {
+                sessionId: session.id,
+                tokenHash: refreshTokenHash,
+                expiresAt: new Date(Date.now() + sevenDaysInMs),
+            },
+        });
 
         return {
             user: {

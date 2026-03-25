@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+
 import { LoginUserUseCase } from "../../application/use-cases/login-user.js";
 import { RegisterUserUseCase } from "../../application/use-cases/register-user.js";
 import { registerBodySchema, loginBodySchema } from "./auth.validators.js";
@@ -25,6 +26,8 @@ export class AuthController {
         const result = await loginUserUseCase.execute({
             email: body.email,
             password: body.password,
+            userAgent: request.get("user-agent") ?? "unknown",
+            ip: request.ip ?? "unknown",
         });
 
         return response.status(200).json(result);
