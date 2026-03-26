@@ -38,9 +38,6 @@ export class RefreshSessionUseCase {
             include: {
                 user: true,
                 refreshTokens: {
-                    where: {
-                        revokedAt: null,
-                    },
                     orderBy: {
                         createdAt: "desc",
                     },
@@ -56,22 +53,59 @@ export class RefreshSessionUseCase {
             throw new AppError("Sessão revogada", 401, "SESSION_REVOKED");
         }
 
-        const currentRefreshToken = session.refreshTokens[0];
+        const activeRefreshToken = session.refreshTokens.find(
+            (token) => token.revokedAt === null,
+        );
 
-        if (!currentRefreshToken) {
+        if (!activeRefreshToken) {
             throw new AppError("Refresh token inválido", 401, "INVALID_REFRESH_TOKEN");
         }
 
-        if (currentRefreshToken.expiresAt < new Date()) {
+        if (activeRefreshToken.expiresAt < new Date()) {
             throw new AppError("Refresh token expirado", 401, "REFRESH_TOKEN_EXPIRED");
         }
 
-        const tokenMatches = await argon2.verify(
-            currentRefreshToken.tokenHash,
+        const matchesActiveToken = await argon2.verify(
+            activeRefreshToken.tokenHash,
             refreshToken,
         );
 
-        if (!tokenMatches) {
+        if (!matchesActiveToken) {
+            for (const storedToken of session.refreshTokens) {
+                const matchesStoredToken = await argon2.verify(
+                    storedToken.tokenHash,
+                    refreshToken,
+                );
+
+                if (matchesStoredToken) {
+                    await prisma.$transaction([
+                        prisma.session.update({
+                            where: {
+                                id: session.id,
+                            },
+                            data: {
+                                revokedAt: new Date(),
+                            },
+                        }),
+                        prisma.refreshToken.updateMany({
+                            where: {
+                                sessionId: session.id,
+                                revokedAt: null,
+                            },
+                            data: {
+                                revokedAt: new Date(),
+                            },
+                        }),
+                    ]);
+
+                    throw new AppError(
+                        "Reuse de refresh token detectado. Sessão revogada.",
+                        401,
+                        "REFRESH_TOKEN_REUSE_DETECTED",
+                    );
+                }
+            }
+
             throw new AppError("Refresh token inválido", 401, "INVALID_REFRESH_TOKEN");
         }
 
@@ -95,7 +129,7 @@ export class RefreshSessionUseCase {
 
         await prisma.refreshToken.update({
             where: {
-                id: currentRefreshToken.id,
+                id: activeRefreshToken.id,
             },
             data: {
                 revokedAt: new Date(),

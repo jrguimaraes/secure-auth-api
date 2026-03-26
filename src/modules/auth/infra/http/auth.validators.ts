@@ -22,9 +22,9 @@ export const loginBodySchema = z.object({
 });
 
 export const refreshSessionBodySchema = z.object({
-  refreshToken: z
-    .string()
-    .min(1, "Refresh token é obrigatório"),
+    refreshToken: z
+        .string()
+        .min(1, "Refresh token é obrigatório"),
 });
 
 export type RegisterBodySchema = z.infer<typeof registerBodySchema>;
