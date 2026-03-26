@@ -21,12 +21,5 @@ export const loginBodySchema = z.object({
         .min(1, "Senha é obrigatória"),
 });
 
-export const refreshSessionBodySchema = z.object({
-    refreshToken: z
-        .string()
-        .min(1, "Refresh token é obrigatório"),
-});
-
 export type RegisterBodySchema = z.infer<typeof registerBodySchema>;
 export type LoginBodySchema = z.infer<typeof loginBodySchema>;
-export type RefreshSessionBodySchema = z.infer<typeof refreshSessionBodySchema>;

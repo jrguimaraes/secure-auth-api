@@ -7,5 +7,6 @@ const authController = new AuthController();
 authRoutes.post("/register", authController.register);
 authRoutes.post("/login", authController.login);
 authRoutes.post("/refresh", authController.refresh);
+authRoutes.post("/logout", authController.logout);
 
 export { authRoutes };

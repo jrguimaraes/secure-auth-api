@@ -9,6 +9,10 @@ const envSchema = z.object({
 
     JWT_ACCESS_EXPIRES_IN: z.string().min(1),
     JWT_REFRESH_EXPIRES_IN: z.string().min(1),
+
+    COOKIE_REFRESH_TOKEN_NAME: z.string().min(1),
+    COOKIE_REFRESH_TOKEN_MAX_AGE_MS: z.coerce.number().int().positive(),
+    COOKIE_SECURE: z.coerce.boolean().default(false),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

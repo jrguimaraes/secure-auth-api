@@ -1,9 +1,13 @@
-import type { Request, Response } from "express";
+import { Request, Response } from "express";
 
 import { LoginUserUseCase } from "../../application/use-cases/login-user.js";
 import { RegisterUserUseCase } from "../../application/use-cases/register-user.js";
+import { LogoutUserUseCase } from "../../application/use-cases/logout-user.js";
 import { RefreshSessionUseCase } from "../../application/use-cases/refresh-session.js";
-import { registerBodySchema, loginBodySchema, refreshSessionBodySchema } from "./auth.validators.js";
+import { registerBodySchema, loginBodySchema } from "./auth.validators.js";
+import { env } from "../../../../shared/config/env.js";
+import { getRefreshTokenCookieOptions } from "../../../../shared/http/cookies.js";
+import { AppError } from "../../../../shared/errors/app-error.js";
 
 export class AuthController {
     async register(request: Request, response: Response) {
@@ -31,17 +35,67 @@ export class AuthController {
             ip: request.ip ?? "unknown",
         });
 
-        return response.status(200).json(result);
+        response.cookie(
+            env.COOKIE_REFRESH_TOKEN_NAME,
+            result.refreshToken,
+            getRefreshTokenCookieOptions(),
+        );
+
+        return response.status(200).json({
+            user: result.user,
+            accessToken: result.accessToken,
+        });
     }
 
     async refresh(request: Request, response: Response) {
-        const body = refreshSessionBodySchema.parse(request.body);
+        const refreshToken = request.cookies?.[env.COOKIE_REFRESH_TOKEN_NAME];
+
+        if (!refreshToken) {
+            throw new AppError(
+                "Refresh token não encontrado",
+                401,
+                "MISSING_REFRESH_TOKEN",
+            );
+        }
 
         const refreshSessionUseCase = new RefreshSessionUseCase();
 
         const result = await refreshSessionUseCase.execute({
-            refreshToken: body.refreshToken,
+            refreshToken,
         });
+
+        response.cookie(
+            env.COOKIE_REFRESH_TOKEN_NAME,
+            result.refreshToken,
+            getRefreshTokenCookieOptions(),
+        );
+
+        return response.status(200).json({
+            accessToken: result.accessToken,
+        });
+    }
+
+    async logout(request: Request, response: Response) {
+        const refreshToken = request.cookies?.[env.COOKIE_REFRESH_TOKEN_NAME];
+
+        if (!refreshToken) {
+            throw new AppError(
+                "Refresh token não encontrado",
+                401,
+                "MISSING_REFRESH_TOKEN",
+            );
+        }
+
+        const logoutUserUseCase = new LogoutUserUseCase();
+
+        const result = await logoutUserUseCase.execute({
+            refreshToken,
+        });
+
+        response.clearCookie(
+            env.COOKIE_REFRESH_TOKEN_NAME,
+            getRefreshTokenCookieOptions(),
+        );
 
         return response.status(200).json(result);
     }
