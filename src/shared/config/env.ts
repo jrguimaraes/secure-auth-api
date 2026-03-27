@@ -12,7 +12,7 @@ const envSchema = z.object({
 
     COOKIE_REFRESH_TOKEN_NAME: z.string().min(1),
     COOKIE_REFRESH_TOKEN_MAX_AGE_MS: z.coerce.number().int().positive(),
-    COOKIE_SECURE: z.coerce.boolean().default(false),
+    COOKIE_SECURE: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
