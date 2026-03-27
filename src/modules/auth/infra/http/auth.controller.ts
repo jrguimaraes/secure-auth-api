@@ -4,6 +4,7 @@ import { LoginUserUseCase } from "../../application/use-cases/login-user.js";
 import { RegisterUserUseCase } from "../../application/use-cases/register-user.js";
 import { LogoutUserUseCase } from "../../application/use-cases/logout-user.js";
 import { RefreshSessionUseCase } from "../../application/use-cases/refresh-session.js";
+import { GetMeUseCase } from "../../application/use-cases/get-me.js";
 import { registerBodySchema, loginBodySchema } from "./auth.validators.js";
 import { env } from "../../../../shared/config/env.js";
 import { getRefreshTokenCookieOptions } from "../../../../shared/http/cookies.js";
@@ -96,6 +97,20 @@ export class AuthController {
             env.COOKIE_REFRESH_TOKEN_NAME,
             getRefreshTokenCookieOptions(),
         );
+
+        return response.status(200).json(result);
+    }
+
+    async me(request: Request, response: Response) {
+        if (!request.user?.sub) {
+            throw new AppError("Usuário não autenticado", 401, "UNAUTHENTICATED");
+        }
+
+        const getMeUseCase = new GetMeUseCase();
+
+        const result = await getMeUseCase.execute({
+            userId: request.user.sub,
+        });
 
         return response.status(200).json(result);
     }
