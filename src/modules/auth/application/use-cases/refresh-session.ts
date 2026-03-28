@@ -1,4 +1,5 @@
 import argon2 from "argon2";
+import type { RefreshToken } from "@prisma/client";
 
 import { verifyRefreshToken, signAccessToken, signRefreshToken } from "../../../../shared/auth/jwt.js";
 import { prisma } from "../../../../shared/db/prisma.js";
@@ -54,7 +55,7 @@ export class RefreshSessionUseCase {
         }
 
         const activeRefreshToken = session.refreshTokens.find(
-            (token) => token.revokedAt === null,
+            (token: RefreshToken) => token.revokedAt === null,
         );
 
         if (!activeRefreshToken) {

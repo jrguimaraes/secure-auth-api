@@ -12,5 +12,21 @@ services:
         volumes:
             - dbdata:/var/lib/postgresql/data
 
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: secure_auth_api
+        restart: unless-stopped
+        depends_on:
+            - db
+        ports:
+            - "3000:3000"
+        env_file:
+            - .env
+        environment:
+            DATABASE_URL: postgresql://app:app@db:5432/secure_auth?schema=public
+        command: sh -c "npx prisma migrate deploy && npm run start"
+
 volumes:
     dbdata:
