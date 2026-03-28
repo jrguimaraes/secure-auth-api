@@ -13,6 +13,7 @@ API de autenticação construída com Node.js e TypeScript, focada em boas prát
 - Argon2
 - Zod
 - Vitest + Supertest
+- Docker
 
 ---
 
@@ -54,6 +55,14 @@ docker-compose up -d
 npx prisma migrate dev
 npm run dev
 ```
+
+### 🐳 Usando Docker
+
+```bash
+docker-compose up --build
+```
+A API ficará disponível em:
+http://localhost:3000
 
 ---
 
