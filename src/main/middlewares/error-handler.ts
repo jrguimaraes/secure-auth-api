@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { AppError } from "../../shared/errors/app-error.js";
+import { logger } from "../../shared/logger.js";
 
 export function errorHandler(
     error: unknown,
@@ -30,7 +31,7 @@ export function errorHandler(
         });
     }
 
-    console.error("[UNHANDLED_ERROR]", error);
+    logger.error({ error }, "unhandled_error");
 
     return res.status(500).json({
         ok: false,
